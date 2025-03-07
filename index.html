@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barley - Your Cocktail Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #FF2E7E;        /* Hot pink */
+      --primary-light: #FF5CA0;  /* Lighter pink */
+      --secondary: #9000FF;      /* Purple */
+      --accent: #00E0FF;         /* Cyan */
+      --accent2: #FFD100;        /* Yellow */
+      --text-light: #FFFFFF;     /* White */
+      --text-dark: #222222;      /* Dark gray */
+      --bg: #1A1A2E;             /* Dark blue background */
+      --bg-light: #262651;       /* Lighter blue background */
+      --user-message: #FF2E7E;   /* Hot pink */
+      --bot-message: #9000FF;    /* Purple */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 46, 126, 0.2) 0%, transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(144, 0, 255, 0.2) 0%, transparent 30%),
+        radial-gradient(circle at 50% 50%, rgba(0, 224, 255, 0.1) 0%, transparent 50%);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: var(--text-dark);
+    }
+
+    html, body {
+      overflow: hidden;
+    }
+
+
+    .chat-container {
+      width: 90%;
+      max-width: 800px;
+      height: 90vh;
+      background-color: rgba(26, 26, 46, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+                  0 0 30px rgba(255, 46, 126, 0.3),
+                  0 0 50px rgba(144, 0, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--text-light);
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      animation: headerGlow 5s infinite alternate;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes headerGlow {
+      0% { box-shadow: 0 4px 20px rgba(255, 46, 126, 0.4); }
+      50% { box-shadow: 0 4px 20px rgba(144, 0, 255, 0.4); }
+      100% { box-shadow: 0 4px 20px rgba(0, 224, 255, 0.4); }
+    }
+
+    .chat-header i {
+      font-size: 32px;
+      margin-right: 15px;
+      color: var(--accent2);
+      text-shadow: 0 0 10px rgba(255, 209, 0, 0.5);
+    }
+
+    .chat-output {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .chat-output .message {
+      margin-bottom: 20px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      line-height: 1.5;
+      position: relative;
+      animation: fadeIn 0.4s ease-out;
+      font-weight: 500;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-output .user-message {
+      background: linear-gradient(135deg, var(--primary) 0%, #FF6B6B 100%);
+      color: var(--text-light);
+      margin-left: auto;
+      border-bottom-right-radius: 5px;
+    }
+
+    .chat-output .user-message::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, transparent 50%, var(--primary-light) 50%);
+      transform: rotate(45deg);
+      border-radius: 0 0 5px 0;
+      z-index: -1;
+    }
+
+    .chat-output .bot-message {
+      background: linear-gradient(135deg, var(--secondary) 0%, #7E3FF2 100%);
+      color: var(--text-light);
+      margin-right: auto;
+      border-bottom-left-radius: 5px;
+    }
+
+    .chat-output .bot-message::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -8px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(225deg, transparent 50%, #7E3FF2 50%);
+      transform: rotate(45deg);
+      border-radius: 0 0 0 5px;
+      z-index: -1;
+    }
+
+    .chat-output .bot-message a {
+      color: var(--accent2);
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .chat-output .bot-message img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin: 10px 0;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 20px;
+      background-color: rgba(38, 38, 81, 0.8);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 16px 24px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      outline: none;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s;
+      color: var(--text-light);
+      font-family: 'Outfit', sans-serif;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-input input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .chat-input input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 224, 255, 0.2),
+                  inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-input button {
+      background: linear-gradient(135deg, var(--accent) 0%, #00BCD4 100%);
+      color: var(--text-dark);
+      font-weight: 600;
+      border: none;
+      border-radius: 30px;
+      padding: 16px 28px;
+      margin-left: 15px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      box-shadow: 0 4px 10px rgba(0, 224, 255, 0.3);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chat-input button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(-45deg);
+      transition: transform 0.5s;
+      z-index: 1;
+    }
+
+    .chat-input button:hover::before {
+      animation: shine 1s;
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-300%) translateY(-300%) rotate(-45deg);
+      }
+      100% {
+        transform: translateX(300%) translateY(300%) rotate(-45deg);
+      }
+    }
+
+    .chat-input button i {
+      margin-left: 8px;
+      font-size: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .chat-input button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 15px rgba(0, 224, 255, 0.4);
+    }
+
+    .chat-input button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 8px rgba(0, 224, 255, 0.3);
+    }
+
+    /* Confetti particles */
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      opacity: 0.5;
+      border-radius: 2px;
+      animation: fall 5s linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(calc(100vh + 100px)) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* For code blocks and other markdown elements */
+    pre {
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 10px 0;
+      border-left: 3px solid var(--accent);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      color: var(--accent2);
+    }
+
+    /* Make the scrollbar more stylish */
+    .chat-output::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-output::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .chat-output::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    .chat-output::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 224, 255, 0.3);
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <i class="fas fa-cocktail"></i>
+      Barley - Your Party Cocktail Assistant
+    </div>
+    <div class="chat-output" id="chat-output">
+      <!-- Chat messages will appear here -->
+      <div class="message bot-message">Hey party people! 🎉 I'm Barley, your cocktail assistant. What can I mix up for your celebration today? 🍹</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="What's your party drink of choice?" />
+      <button id="send-button" onclick="sendMessage()">Mix it! <i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <script>
+    // Create confetti particles
+    function createConfetti() {
+      const colors = ['#FF2E7E', '#9000FF', '#00E0FF', '#FFD100', '#FF6B6B'];
+      const confettiCount = 50;
+
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        confetti.style.animationDelay = (Math.random() * 5) + 's';
+        document.body.appendChild(confetti);
+      }
+    }
+
+    // Call the function when page loads
+    createConfetti();
+
+    async function sendMessage() {
+      const userInput = document.getElementById('user-input');
+      const sendButton = document.getElementById('send-button');
+      const chatOutput = document.getElementById('chat-output');
+
+      if (userInput.value.trim() === '') return;
+
+      // Disable input and button
+      userInput.disabled = true;
+      sendButton.disabled = true;
+      sendButton.textContent = 'Mixing...';
+
+      // Display user's message
+      const userMessage = document.createElement('div');
+      userMessage.classList.add('message', 'user-message');
+      userMessage.textContent = userInput.value;
+      chatOutput.appendChild(userMessage);
+
+      // Send the message to the backend
+      try {
+        const response = await fetch('http://localhost:8000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: userInput.value,
+            chat_history: []
+          }),
+        });
+
+        const data = await response.json();
+
+        // Display Barley's response
+        const botMessage = document.createElement('div');
+        botMessage.classList.add('message', 'bot-message');
+        botMessage.innerHTML = marked.parse(data.response); // Convert Markdown to HTML
+        chatOutput.appendChild(botMessage);
+      }
+      catch (error) {
+        // Display error message
+        const botMessage = document.createElement('div');
+        botMessage.classList.add('message', 'bot-message');
+        botMessage.textContent = "Oops! Looks like I spilled the drinks! Please try again in a moment. 🤪";
+        chatOutput.appendChild(botMessage);
+        console.error('Error:', error);
+      }
+      finally {
+        // Re-enable input and button
+        userInput.disabled = false;
+        sendButton.disabled = false;
+        sendButton.textContent = 'Mix it!';
+      }
+
+      // Clear input and scroll to bottom
+      userInput.value = '';
+      chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
+    // Add event listener for the Enter key
+    document.getElementById('user-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
